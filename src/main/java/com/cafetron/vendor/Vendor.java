@@ -1,14 +1,16 @@
 package com.cafetron.vendor;
 
+import com.cafetron.menu.MenuItem;
 import jakarta.persistence.*;
-import jakarta.transaction.Transaction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import java.awt.*;
 import java.time.LocalDateTime;
+import java.util.List; // Correct List import
 
 @Entity
 @Table(name = "vendor")
@@ -39,15 +41,11 @@ public class Vendor {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // Relationships
-//    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL)
-//    private List<MenuItem> menuItems;
-//
-//    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL)
-//    private List<VendorOrderStatus> vendorOrderStatuses;
-//
-//    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL)
-//    private List<Transaction> transactions;
+    // Relationships - Safely excluded from Lombok strings/hash calculations
+    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<MenuItem> menuItems;
 
     @PrePersist
     protected void onCreate() {
