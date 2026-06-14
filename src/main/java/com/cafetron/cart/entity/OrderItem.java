@@ -1,7 +1,7 @@
 package com.cafetron.cart.entity;
 
 import com.cafetron.menu.entity.MenuItem;
-import com.cafetron.order.Order;
+import com.cafetron.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,5 +35,5 @@ public class OrderItem {
     private int quantity;
 
     @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal unit_price;
+    private BigDecimal unitPrice;
 }

@@ -1,6 +1,5 @@
-package com.cafetron.order;
+package com.cafetron.order.entity;
 
-import com.cafetron.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,6 @@
 package com.cafetron.orderQR.service;
 
-import com.cafetron.order.Order;
+import com.cafetron.order.entity.Order;
 import com.cafetron.orderQR.entity.OrderQR;
 import com.cafetron.orderQR.exception.QRDecodeException;
 import com.cafetron.orderQR.exception.QRGenerationException;
