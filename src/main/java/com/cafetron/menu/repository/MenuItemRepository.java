@@ -1,16 +1,26 @@
 package com.cafetron.menu.repository;
 
 import com.cafetron.menu.entity.MenuItem;
+import jakarta.persistence.LockModeType;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 //Inherits basic CRUD from JpaRepository
 public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
+    List<MenuItem> findByIsAvailableTrue();
+    List<MenuItem> findByItemNameContainingIgnoreCase(String name);
+    List<MenuItem> findByFoodType(String foodType);
+    List<MenuItem> findByVendorId(Long vendorId);  // All items for one vendor
 
-    List<MenuItem> findByVendorId(Long vendorId); // All items for one vendor
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select m from MenuItem m where m.id = :id")
+    Optional<MenuItem> findByIdForUpdate(@NotNull Long id);
 
     @Query("SELECT m FROM MenuItem m WHERE m.isAvailable = true AND m.vendor.isActive = true")
     List<MenuItem> findTodaysMenu(); // Today's menu: available items from active vendors.
@@ -25,4 +35,5 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
     @Query("SELECT m FROM MenuItem m WHERE m.isAvailable = true AND m.vendor.isActive = true " +
             "AND m.foodType = :foodType")
     List<MenuItem> filterByFoodType(@Param("foodType") String foodType);
+
 }

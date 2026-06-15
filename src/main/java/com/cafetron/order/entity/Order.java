@@ -1,6 +1,5 @@
-package com.cafetron.order;
+package com.cafetron.order.entity;
 
-import com.cafetron.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,9 +19,8 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "token")
     private String token;
@@ -35,6 +33,9 @@ public class Order {
 
     @Column(name = "location")
     private String location;
+
+    @Column(name = "pickupSlot")
+    private String pickupSlot;
 
     @Column(name = "total_amount")
     private BigDecimal totalAmount;

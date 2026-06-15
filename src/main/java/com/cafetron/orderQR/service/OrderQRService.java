@@ -1,6 +1,6 @@
 package com.cafetron.orderQR.service;
 
-import com.cafetron.order.Order;
+import com.cafetron.order.entity.Order;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface OrderQRService {

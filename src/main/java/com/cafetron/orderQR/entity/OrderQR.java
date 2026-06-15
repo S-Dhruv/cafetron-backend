@@ -1,6 +1,6 @@
 package com.cafetron.orderQR.entity;
 
-import com.cafetron.order.Order;
+import com.cafetron.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
