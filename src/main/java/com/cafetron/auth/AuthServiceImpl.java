@@ -3,7 +3,7 @@ package com.cafetron.auth;
 import com.cafetron.auth.dto.AuthResponse;
 import com.cafetron.auth.dto.LoginRequest;
 import com.cafetron.auth.dto.RegisterRequest;
-import com.cafetron.auth.repository.UserRepository;
+import com.cafetron.user.repository.UserRepository;
 import com.cafetron.security.JwtUtil;
 import com.cafetron.security.UserDetailsServiceImpl;
 import com.cafetron.security.UserPrincipal;
