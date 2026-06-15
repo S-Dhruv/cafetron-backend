@@ -13,7 +13,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByWallet_IdOrderByCreatedAtDesc(Long walletId);
 
-    List<Transaction> findByOrderId(Long orderId);
+    List<Transaction> findByOrder_Id(Long orderId);
 
     boolean existsByOrderIdAndType(Long orderId, TransactionType type);
 }
