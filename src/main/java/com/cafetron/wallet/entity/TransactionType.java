@@ -4,5 +4,4 @@ public enum TransactionType {
     TOP_UP,
     DEBIT,
     REFUND
-
 }
