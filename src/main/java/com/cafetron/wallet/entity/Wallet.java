@@ -28,6 +28,9 @@ public class Wallet {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Version
+    private Long version;
+
     @PrePersist
     public void onCreate(){
         this.updatedAt=LocalDateTime.now();

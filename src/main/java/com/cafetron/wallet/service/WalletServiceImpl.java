@@ -39,6 +39,9 @@ public class WalletServiceImpl implements WalletService {
         // 2. check balance >= amount, throw IllegalArgumentException if not
         // 3. subtract amount and save wallet
         // 4. build and save a Transaction with type=DEBIT, wallet, amount, description
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
         Wallet wallet = walletRepository.findByUser_Id(userId).orElseThrow(() -> new WalletNotFoundException(userId));
 
         if (wallet.getBalance().compareTo(amount) >= 0) {
@@ -60,6 +63,9 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public void refund(Long userId, BigDecimal amount, String description) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
         Wallet wallet = walletRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new WalletNotFoundException(userId));
 
