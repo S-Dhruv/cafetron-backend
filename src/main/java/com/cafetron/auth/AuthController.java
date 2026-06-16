@@ -22,13 +22,17 @@ public class AuthController {
     }
 
     @PostMapping("/auth/register")
+    @SuppressWarnings("unused")
     public ResponseEntity<AuthResponse> register(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/auth/login")
+    @SuppressWarnings("unused")
     public ResponseEntity<AuthResponse> login(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
