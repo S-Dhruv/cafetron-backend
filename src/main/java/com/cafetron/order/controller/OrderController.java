@@ -43,6 +43,16 @@ public class OrderController {
         return orderService.getMyOrders(principal.getId());
     }
 
+    @GetMapping("/qr-preview")
+    @ResponseStatus(HttpStatus.OK)
+    public OrderDetailResponse getOrderPreviewByQrToken(@AuthenticationPrincipal UserPrincipal principal,
+                                                        @RequestParam("token") String token) {
+        if ( principal == null ) {
+            throw new IllegalStateException("User is not authenticated");
+        }
+        return orderService.getOrderDetailByToken(principal, token);
+    }
+
     @GetMapping("/{orderId}")
     @ResponseStatus(HttpStatus.OK)
     public OrderDetailResponse getOrderDetail(@AuthenticationPrincipal UserPrincipal principal, @PathVariable Long orderId){

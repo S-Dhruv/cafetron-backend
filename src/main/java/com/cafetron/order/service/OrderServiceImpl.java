@@ -11,6 +11,7 @@ import com.cafetron.orderQR.service.OrderQRService;
 import com.cafetron.pickup.VendorOrderStatus;
 import com.cafetron.pickup.VendorOrderStatusType;
 import com.cafetron.pickup.repository.VendorOrderStatusRepository;
+import com.cafetron.security.UserPrincipal;
 import com.cafetron.wallet.service.WalletService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -174,7 +175,30 @@ public class OrderServiceImpl implements OrderService {
             throw new SecurityException("Access denied: order does not belong to this user.");
         }
 
-         // 3. fetch all order items for this order with menuItem eagerly loaded via join to prevent N+1
+        return toOrderDetailResponse(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDetailResponse getOrderDetailByToken(UserPrincipal principal, String token) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("QR token is required.");
+        }
+
+        Order order = orderRepository.findByToken(token.trim())
+                .orElseThrow(() -> new IllegalArgumentException("Order not found for this QR token."));
+
+        return toOrderDetailResponse(order, principal);
+    }
+
+    private OrderDetailResponse toOrderDetailResponse(Order order) {
+        return toOrderDetailResponse(order, null);
+    }
+
+    private OrderDetailResponse toOrderDetailResponse(Order order, UserPrincipal scannerPrincipal) {
+         Long orderId = order.getId();
+
+         // fetch all order items for this order with menuItem eagerly loaded via join to prevent N+1
          List<OrderItem> orderItems = orderItemRepository.findByOrder_IdWithMenuItems(orderId);
 
          // fetch vendor status rows and index by orderItem id for O(1) lookup during mapping
@@ -185,7 +209,11 @@ public class OrderServiceImpl implements OrderService {
 
         // 4. map each OrderItem -> OrderDetailItemResponse
         List<OrderDetailItemResponse> itemResponses = new ArrayList<>();
+        BigDecimal visibleTotal = BigDecimal.ZERO;
         for (OrderItem oi : orderItems) {
+            if (!canPreviewOrderItem(scannerPrincipal, oi)) {
+                continue;
+            }
             VendorOrderStatusType vendorStatus = statusByOrderItemId.getOrDefault(oi.getId(), VendorOrderStatusType.PENDING);
             itemResponses.add(new OrderDetailItemResponse(
                     oi.getMenuItem().getId(),
@@ -194,6 +222,7 @@ public class OrderServiceImpl implements OrderService {
                     oi.getUnitPrice(),
                     vendorStatus.name()
             ));
+            visibleTotal = visibleTotal.add(oi.getUnitPrice().multiply(BigDecimal.valueOf(oi.getQuantity())));
         }
 
         // 5. assemble top-level response
@@ -201,13 +230,32 @@ public class OrderServiceImpl implements OrderService {
                 order.getId(),
                 order.getOverallStatus(),
                 order.getPaymentStatus(),
-                order.getTotalAmount(),
+                scannerPrincipal == null || isAdmin(scannerPrincipal) ? order.getTotalAmount() : visibleTotal,
                 order.getPickupSlot(),
                 order.getLocation(),
                 order.getToken(),
                 order.getCreatedAt(),
                 itemResponses
         );
+    }
+
+    private boolean canPreviewOrderItem(UserPrincipal scannerPrincipal, OrderItem item) {
+        if (scannerPrincipal == null || isAdmin(scannerPrincipal)) {
+            return true;
+        }
+
+        String scannerEmail = scannerPrincipal.getUser().getEmail();
+        String itemVendorEmail = item.getMenuItem() == null || item.getMenuItem().getVendor() == null
+                ? null
+                : item.getMenuItem().getVendor().getEmail();
+
+        return scannerEmail != null
+                && itemVendorEmail != null
+                && scannerEmail.equalsIgnoreCase(itemVendorEmail);
+    }
+
+    private boolean isAdmin(UserPrincipal principal) {
+        return "ADMIN".equalsIgnoreCase(principal.getRole());
     }
 
     @Override
