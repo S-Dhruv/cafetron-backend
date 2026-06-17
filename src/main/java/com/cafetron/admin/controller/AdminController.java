@@ -2,16 +2,17 @@ package com.cafetron.admin.controller;
 
 import com.cafetron.admin.dto.OpsStatusDTO;
 import com.cafetron.admin.service.WindowService;
+import com.cafetron.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 /**
  * Operational controls — window toggle and cutoff management.
- * @PreAuthorize("hasRole('ADMIN')") will be added in Module 1 integration.
+ * Role enforcement will be added in Module 1 integration.
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -26,7 +27,8 @@ public class AdminController {
     // Returns current window state and cutoff time.
     // ─────────────────────────────────────────────────────────────────
     @GetMapping("/config")
-    public ResponseEntity<OpsStatusDTO> getConfig() {
+    @SuppressWarnings("unused")
+    public ResponseEntity<OpsStatusDTO> getConfig(@AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(windowService.getStatus());
     }
 
@@ -36,7 +38,8 @@ public class AdminController {
     // No request body needed.
     // ─────────────────────────────────────────────────────────────────
     @PostMapping("/window/toggle")
-    public ResponseEntity<OpsStatusDTO> toggleWindow() {
+    @SuppressWarnings("unused")
+    public ResponseEntity<OpsStatusDTO> toggleWindow(@AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(windowService.toggleWindow());
     }
 
@@ -46,7 +49,9 @@ public class AdminController {
     // Updates the daily cutoff time.
     // ─────────────────────────────────────────────────────────────────
     @PutMapping("/cutoff")
+    @SuppressWarnings("unused")
     public ResponseEntity<OpsStatusDTO> updateCutoff(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody Map<String, String> body) {
         String time = body.get("time");
         if (time == null || !time.matches("^([01]\\d|2[0-3]):[0-5]\\d$")) {

@@ -65,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setUserId(userId);
         order.setPickupSlot(request.pickupSlot());
-        order.setOverallStatus("PLACED");
+        order.setOverallStatus("PENDING_VENDOR");
         order.setPaymentStatus("PAID");
         order.setCreatedAt(LocalDateTime.now());
 

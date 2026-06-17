@@ -22,13 +22,17 @@ public class AuthController {
     }
 
     @PostMapping("/auth/register")
+    @SuppressWarnings("unused")
     public ResponseEntity<AuthResponse> register(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/auth/login")
+    @SuppressWarnings("unused")
     public ResponseEntity<AuthResponse> login(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
@@ -43,7 +47,7 @@ public class AuthController {
                 "id",         user.getId(),
                 "name",       user.getName(),
                 "email",      user.getEmail(),
-                "role",       user.getRole(),
+                "role",       principal.getRole(),
                 "employeeId", user.getEmployeeId() != null
                         ? user.getEmployeeId() : "",
                 "department", user.getDepartment() != null

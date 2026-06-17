@@ -8,9 +8,11 @@ import com.cafetron.orderQR.entity.OrderQR;
 import com.cafetron.orderQR.exception.QRDecodeException;
 import com.cafetron.orderQR.repository.OrderQRRepository;
 import com.cafetron.orderQR.service.OrderQRService;
+import com.cafetron.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +30,7 @@ public class OrderQRController {
     OrderRepository orderRepository;
 
     @GetMapping
+    @SuppressWarnings("unused")
     public ResponseEntity<GenQRResponse> findQR(@RequestParam("orderId") Long orderId) {
 
         Order order = orderRepository.findById(orderId)
@@ -56,7 +59,9 @@ public class OrderQRController {
     }
 
     @PostMapping
-    public ResponseEntity<DecodeQRResponse> decodeQR(@RequestParam("qr") MultipartFile file) {
+    @SuppressWarnings("unused")
+    public ResponseEntity<DecodeQRResponse> decodeQR(@AuthenticationPrincipal UserPrincipal principal,
+                                                     @RequestParam("qr") MultipartFile file) {
         String token;
 
         try {
