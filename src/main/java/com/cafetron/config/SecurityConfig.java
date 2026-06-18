@@ -56,47 +56,19 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthEntryPoint))
                 .authorizeHttpRequests(auth -> auth
-
-                                //Temporarily commented for ease of development.
-
-//                        // Public routes
-//                        .requestMatchers(
-//                                "/api/auth/register",
-//                                "/api/auth/login"
-//                        ).permitAll()
-//
-//                        // Admin only
-//                        .requestMatchers("/api/admin/**")
-//                        .hasRole("ADMIN")
-//
-//                        // Counter and Admin
-//                        .requestMatchers("/api/vendors/**")
-//                        .hasAnyRole("COUNTER", "ADMIN")
-//
-//                        // Pickup — Counter and Admin
-//                        .requestMatchers("/api/pickup/**")
-//                        .hasAnyRole("COUNTER", "ADMIN")
-//
-//                        // Everything else needs a valid JWT
-//                        .anyRequest().authenticated()
-
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers(
-                                        "/api/auth/**",
-                                        "/auth/**"
-                                ).permitAll()
-                                .requestMatchers("/api/admin/**", "/api/dev/**").hasRole("ADMIN")
-                                .requestMatchers("/api/vendor/orders/**").hasAnyRole("VENDOR", "ADMIN")
-                                .requestMatchers("/api/vendors/**", "/vendors/**").authenticated()
-                                .requestMatchers("/api/menu/**", "/menu/**").authenticated()
-                                .requestMatchers("/api/orders/**").authenticated()
-                                .requestMatchers("/api/order-qr/**").authenticated()
-                                .requestMatchers("/api/wallet/**").authenticated()
-                                .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/auth/**").permitAll()
+                        .requestMatchers("/api/admin/**", "/api/dev/**").hasRole("ADMIN")
+                        .requestMatchers("/api/vendor/orders/**").hasAnyRole("VENDOR", "ADMIN")
+                        .requestMatchers("/api/vendors/**", "/vendors/**").authenticated()
+                        .requestMatchers("/api/menu/**", "/menu/**").authenticated()
+                        .requestMatchers("/api/orders/**").authenticated()
+                        .requestMatchers("/api/order-qr/**").authenticated()
+                        .requestMatchers("/api/wallet/**").authenticated()
+                        .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtFilter(),
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -108,15 +80,13 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 }
