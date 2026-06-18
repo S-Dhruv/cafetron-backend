@@ -1,5 +1,6 @@
 package com.cafetron.wallet.service;
 
+import com.cafetron.order.entity.Order;
 import com.cafetron.wallet.dto.PagedTransactionDto;
 import com.cafetron.wallet.dto.TransactionResponseDto;
 import com.cafetron.wallet.dto.WalletResponseDto;
@@ -33,6 +34,7 @@ public class WalletServiceImpl implements WalletService {
     @Transactional
     public void debit(Long userId, BigDecimal amount, String description) {
         validateCommonInputs(userId, amount, description, "debit");
+        walletRepository.initializeNullVersion(userId);
 
         Wallet wallet = walletRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new WalletNotFoundException(userId));
@@ -55,16 +57,29 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public void refund(Long userId, BigDecimal amount, String description) {
+        refund(userId, null, amount, description);
+    }
+
+    @Override
+    @Transactional
+    public void refund(Long userId, Order order, BigDecimal amount, String description) {
         validateCommonInputs(userId, amount, description, "refund");
+        walletRepository.initializeNullVersion(userId);
 
         Wallet wallet = walletRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new WalletNotFoundException(userId));
+
+        if (order != null && order.getId() != null
+                && transactionRepository.existsByOrder_IdAndType(order.getId(), TransactionType.REFUND)) {
+            return;
+        }
 
         wallet.setBalance(wallet.getBalance().add(amount));
         walletRepository.save(wallet);
 
         Transaction transaction = new Transaction();
         transaction.setWallet(wallet);
+        transaction.setOrder(order);
         transaction.setAmount(amount);
         transaction.setDescription(description.trim());
         transaction.setType(TransactionType.REFUND);
@@ -75,6 +90,7 @@ public class WalletServiceImpl implements WalletService {
     @Transactional
     public void topUp(Long userId, BigDecimal amount) {
         validateUserAndAmount(userId, amount, "top-up");
+        walletRepository.initializeNullVersion(userId);
 
         Wallet wallet = walletRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new WalletNotFoundException(userId));

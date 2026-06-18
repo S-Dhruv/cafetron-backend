@@ -94,7 +94,7 @@ public class VendorOrderService {
 
     private void refundOrderIfNeeded(Order order, String description) {
         if (!"REFUNDED".equalsIgnoreCase(order.getPaymentStatus())) {
-            walletService.refund(order.getUserId(), order.getTotalAmount(), description);
+            walletService.refund(order.getUserId(), order, order.getTotalAmount(), description);
             order.setPaymentStatus("REFUNDED");
         }
     }
@@ -149,6 +149,9 @@ public class VendorOrderService {
         Order order = item.getOrder();
         BigDecimal unitPrice = item.getUnitPrice();
         BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+        String vendorStatus = isCancelledOrRefunded(order)
+                ? "CANCELLED"
+                : status.getStatus().name();
 
         return new VendorOrderResponse(
                 status.getId(),
@@ -161,10 +164,16 @@ public class VendorOrderService {
                 lineTotal,
                 order.getPickupSlot(),
                 order.getOverallStatus(),
-                status.getStatus().name(),
+                vendorStatus,
                 status.getDeclinedReason(),
                 status.getActionExpiresAt(),
                 order.getCreatedAt()
         );
+    }
+
+    private boolean isCancelledOrRefunded(Order order) {
+        String orderStatus = order.getOverallStatus() == null ? "" : order.getOverallStatus();
+        return "CANCELLED".equalsIgnoreCase(orderStatus)
+                || "REFUNDED".equalsIgnoreCase(order.getPaymentStatus());
     }
 }

@@ -29,6 +29,7 @@ public class Wallet {
     private LocalDateTime updatedAt;
 
     @Version
+    @Column(columnDefinition = "BIGINT DEFAULT 0")
     private Long version;
 
     @PrePersist
@@ -37,7 +38,18 @@ public class Wallet {
         if(this.balance==null){
             this.balance=BigDecimal.ZERO;
         }
+        if(this.version==null){
+            this.version=0L;
+        }
     }
+
+    @PostLoad
+    public void onLoad(){
+        if(this.version==null){
+            this.version=0L;
+        }
+    }
+
     @PreUpdate
     public void onUpdate(){
         this.updatedAt=LocalDateTime.now();

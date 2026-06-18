@@ -267,31 +267,24 @@ public class OrderServiceImpl implements OrderService {
             return getOrderDetail(userId, orderId);
         }
 
-         LocalDateTime now = LocalDateTime.now();
-         List<VendorOrderStatus> statuses = vendorOrderStatusRepository.findByOrderItem_Order_IdWithOrderItem(orderId);
+        LocalDateTime now = LocalDateTime.now();
+        List<VendorOrderStatus> statuses = vendorOrderStatusRepository.findByOrderItem_Order_IdWithOrderItem(orderId);
 
-        boolean timeoutApplied = false;
         for (VendorOrderStatus status : statuses) {
-            boolean isPending = status.getStatus() == VendorOrderStatusType.PENDING;
-            boolean isExpired = status.getActionExpiresAt() != null && !status.getActionExpiresAt().isAfter(now);
-            if (isPending && isExpired) {
+            if (status.getStatus() == VendorOrderStatusType.PENDING) {
                 status.setStatus(VendorOrderStatusType.TIMEOUT);
                 status.setActionedAt(now);
-                timeoutApplied = true;
             }
         }
+        vendorOrderStatusRepository.saveAll(statuses);
 
-        if (timeoutApplied) {
-            vendorOrderStatusRepository.saveAll(statuses);
-
-            if (!"REFUNDED".equalsIgnoreCase(order.getPaymentStatus())) {
-                walletService.refund(userId, order.getTotalAmount(), "Order timeout refund");
-            }
-
-            order.setOverallStatus("TIMEOUT");
-            order.setPaymentStatus("REFUNDED");
-            orderRepository.save(order);
+        if (!"REFUNDED".equalsIgnoreCase(order.getPaymentStatus())) {
+            walletService.refund(userId, order, order.getTotalAmount(), "Order cancelled by timeout request");
         }
+
+        order.setOverallStatus("CANCELLED");
+        order.setPaymentStatus("REFUNDED");
+        orderRepository.save(order);
 
         return getOrderDetail(userId, orderId);
     }

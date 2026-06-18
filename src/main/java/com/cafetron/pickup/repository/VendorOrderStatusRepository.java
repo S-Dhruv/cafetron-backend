@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,5 +38,16 @@ public interface VendorOrderStatusRepository extends JpaRepository<VendorOrderSt
             @Param("statusId") Long statusId,
             @Param("vendorEmail") String vendorEmail
     );
-}
 
+    @Query("""
+            SELECT vos FROM VendorOrderStatus vos
+            JOIN FETCH vos.orderItem oi
+            JOIN FETCH oi.order o
+            WHERE vos.status = com.cafetron.pickup.VendorOrderStatusType.PENDING
+              AND vos.actionExpiresAt IS NOT NULL
+              AND vos.actionExpiresAt <= :now
+              AND o.overallStatus NOT IN ('VENDOR_DECLINED', 'TIMEOUT', 'CANCELLED')
+              AND o.paymentStatus <> 'REFUNDED'
+            """)
+    List<VendorOrderStatus> findExpiredPendingActionableStatuses(@Param("now") LocalDateTime now);
+}
