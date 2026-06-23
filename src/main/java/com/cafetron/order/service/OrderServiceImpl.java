@@ -301,6 +301,7 @@ public class OrderServiceImpl implements OrderService {
         vendorOrderStatusRepository.saveAll(statuses);
 
         if (!"REFUNDED".equalsIgnoreCase(order.getPaymentStatus())) {
+            restoreOrderStock(order);
             walletService.refund(userId, order, order.getTotalAmount(), "Order cancelled by timeout request");
         }
 
@@ -317,6 +318,14 @@ public class OrderServiceImpl implements OrderService {
                 || "TIMEOUT".equalsIgnoreCase(orderStatus)
                 || "CANCELLED".equalsIgnoreCase(orderStatus)
                 || "REFUNDED".equalsIgnoreCase(order.getPaymentStatus());
+    }
+
+    private void restoreOrderStock(Order order) {
+        for (OrderItem item : orderItemRepository.findByOrder_IdWithMenuItems(order.getId())) {
+            MenuItem menuItem = item.getMenuItem();
+            menuItem.setStock(menuItem.getStock() + item.getQuantity());
+            menuItem.setAvailable(menuItem.getStock() > 0);
+        }
     }
 
     private String cleanRequired(String value, String message) {

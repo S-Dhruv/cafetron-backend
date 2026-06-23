@@ -1,5 +1,7 @@
 package com.cafetron.vendor.service;
 
+import com.cafetron.cart.entity.OrderItem;
+import com.cafetron.cart.repository.OrderItemRepository;
 import com.cafetron.order.entity.Order;
 import com.cafetron.order.repository.OrderRepository;
 import com.cafetron.pickup.VendorOrderStatus;
@@ -19,15 +21,18 @@ import java.util.Map;
 public class VendorOrderTimeoutService {
     private final VendorOrderStatusRepository vendorOrderStatusRepository;
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final WalletService walletService;
 
     public VendorOrderTimeoutService(
             VendorOrderStatusRepository vendorOrderStatusRepository,
             OrderRepository orderRepository,
+            OrderItemRepository orderItemRepository,
             WalletService walletService
     ) {
         this.vendorOrderStatusRepository = vendorOrderStatusRepository;
         this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
         this.walletService = walletService;
     }
 
@@ -55,6 +60,7 @@ public class VendorOrderTimeoutService {
 
         for (Order order : timedOutOrders.values()) {
             if (!"REFUNDED".equalsIgnoreCase(order.getPaymentStatus())) {
+                restoreOrderStock(order);
                 walletService.refund(
                         order.getUserId(),
                         order,
@@ -68,5 +74,13 @@ public class VendorOrderTimeoutService {
         }
 
         orderRepository.saveAll(timedOutOrders.values());
+    }
+
+    private void restoreOrderStock(Order order) {
+        for (OrderItem item : orderItemRepository.findByOrder_IdWithMenuItems(order.getId())) {
+            var menuItem = item.getMenuItem();
+            menuItem.setStock(menuItem.getStock() + item.getQuantity());
+            menuItem.setAvailable(menuItem.getStock() > 0);
+        }
     }
 }
